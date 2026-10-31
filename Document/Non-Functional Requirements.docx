@@ -1,0 +1,21 @@
+2. Non-Functional Requirements
+Non-functional requirements describe the quality attributes and constraints of the Company Contact Management System. They define the expected performance, usability, reliability, security, maintainability, and compatibility of the system.
+2.1. Performance
+   * NFR-01: The system shall display the contact list within 3 seconds under normal operating conditions.
+   * NFR-02: The system shall return search results within 3 seconds under normal operating conditions.
+   * NFR-03: The system shall support up to 20 concurrent users under normal operating conditions.
+2.2. Usability
+   * NFR-04: The system shall provide a simple and user-friendly graphical user interface (GUI).
+   * NFR-05: The system shall display clear messages when an operation succeeds or fails.
+2.3. Reliability
+   * NFR-06: The system shall save contact information correctly and retain the saved data when the application is closed and reopened.
+   * NFR-07: The system shall validate required contact information before saving it.
+2.4. Security
+   * NFR-08: The system shall validate user input to prevent invalid data from being saved.
+   * NFR-09: The system shall ask users to confirm before deleting a contact.
+   * NFR-10: The system shall restrict access to contact information and management functions according to user permissions.
+2.5. Maintainability
+   * NFR-11: The system shall organize its source code into separate components to make it easier to understand, modify, and maintain.
+2.6. Compatibility
+   * NFR-12: The system shall run on the operating systems supported by the development team.
+
