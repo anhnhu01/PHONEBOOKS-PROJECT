@@ -1,0 +1,23 @@
+services:
+  phonebook:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: phonebookmanagement:local
+    container_name: phonebook-management
+    ports:
+      # Localhost-only: this demo has no browser authentication.
+      - "127.0.0.1:6080:6080"
+    volumes:
+      # Preserve SQLite data between restarts/rebuilds.
+      - phonebook-data:/data
+    environment:
+      # Optional DEMO admin bootstrap; only used if no Admin exists yet.
+      # Set in a local, gitignored .env file ONLY for the first demo startup.
+      PHONEBOOK_ADMIN_USER: ${PHONEBOOK_ADMIN_USER:-}
+      PHONEBOOK_ADMIN_EMAIL: ${PHONEBOOK_ADMIN_EMAIL:-}
+      PHONEBOOK_ADMIN_PASSWORD: ${PHONEBOOK_ADMIN_PASSWORD:-}
+    restart: unless-stopped
+
+volumes:
+  phonebook-data:
