@@ -27,6 +27,10 @@ bool editContactDialog(QWidget *parent, Contact *c) {
     auto *contents = new QWidget;
     auto *form = new QVBoxLayout(contents);
     form->setSpacing(5);
+    auto *hint = new QLabel("Full name is required. Enter at least one phone number or email.");
+    hint->setObjectName("subtleText");
+    hint->setWordWrap(true);
+    form->addWidget(hint);
     auto make = [&](const QString &title, const QString &value) {
         auto *label = new QLabel(title);
         label->setObjectName("fieldLabel");
@@ -167,6 +171,19 @@ void ContactsPage::addContact() {
     Contact c; c.userId = userId_;
     if (!editContactDialog(this, &c)) return;
     QString error;
+    if (!ContactService::validate(c, &error)) { QMessageBox::warning(this,"Add failed",error); return; }
+    switch (ContactService::checkDuplicate(c)) {
+    case ContactService::Duplicate::SameContact:
+        QMessageBox::warning(this,"Duplicate contact","This contact may already exist, so it was not added.");
+        return;
+    case ContactService::Duplicate::SharedInfo:
+        if (QMessageBox::question(this,"Duplicate info",
+                "This phone number or email already belongs to another contact with a different name.\nAdd anyway?")
+                != QMessageBox::Yes) return;
+        break;
+    case ContactService::Duplicate::None:
+        break;
+    }
     if (!ContactService::add(c, &error)) { QMessageBox::warning(this,"Add failed",error); return; }
     refresh();
     QMessageBox::information(this,"Success","Contact added successfully.");
