@@ -51,8 +51,7 @@ QWidget *scrollPage(QWidget *content) {
     layout->addWidget(scroll);
     return wrapper;
 }
-// Draw the same eye/eye-off interaction without an external image file.
-// `visible` refers to the password's CURRENT visibility.
+// Vẽ hiệu ứng tương tác biểu tượng mắt/gạch chéo mắt (hiện/ẩn) tương tự mà không cần tệp hình ảnh bên ngoài.
 QIcon passwordEyeIcon(bool visible) {
     QPixmap pixmap(24, 24);
     pixmap.fill(Qt::transparent);
@@ -71,7 +70,6 @@ QIcon passwordEyeIcon(bool visible) {
     painter.drawEllipse(QPointF(12, 12), 3, 3);
 
     if (!visible) {
-        // A gap beneath the slash keeps the closed-eye icon readable.
         painter.setPen(QPen(QColor("#FFFFFF"), 3.6, Qt::SolidLine,
                             Qt::RoundCap, Qt::RoundJoin));
         painter.drawLine(QPointF(3.5, 20.5), QPointF(20.5, 3.5));
@@ -90,7 +88,7 @@ void setPasswordVisibility(QLineEdit *edit, QAction *action, bool visible) {
     action->setToolTip(caption);
 }
 
-} // namespace
+}
 
 AuthPage::AuthPage(QWidget *parent): QWidget(parent) {
     auto *outer = new QVBoxLayout(this);
@@ -109,7 +107,7 @@ AuthPage::AuthPage(QWidget *parent): QWidget(parent) {
     pages_ = new QStackedWidget;
     outer->addWidget(pages_,1);
 
-    // Login — portrait composition based on Figma frame 2006:8413.
+  // Đăng nhập — bố cục màn hình dọc theo Figma frame 2006:8413.
     auto *loginContent = new QWidget;
     auto *l = new QVBoxLayout(loginContent);
     l->setContentsMargins(24,20,24,24);
@@ -131,7 +129,7 @@ AuthPage::AuthPage(QWidget *parent): QWidget(parent) {
     addField(l, "Username", loginName_);
     l->addSpacing(14);
     addField(l, "Password", loginPassword_);
-    // Add an eye icon INSIDE the Login password field, as in Figma.
+   // Thêm icon con mắt BÊN TRONG ô nhập mật khẩu Đăng nhập
     loginPasswordToggle_ = loginPassword_->addAction(
         passwordEyeIcon(false), QLineEdit::TrailingPosition);
     setPasswordVisibility(loginPassword_, loginPasswordToggle_, false);
@@ -140,8 +138,8 @@ AuthPage::AuthPage(QWidget *parent): QWidget(parent) {
         setPasswordVisibility(loginPassword_, loginPasswordToggle_, show);
     });
 
-    // Inline error notification, matching the two Figma login error states.
-    // Hide the whole container when there is no error so it takes no space.
+    // Thông báo lỗi trực tiếp trên form
+    // Ẩn toàn bộ container khi không có lỗi để không chiếm không gian hiển thị.
     loginErrorContainer_ = new QWidget;
     auto *errorContainerLayout = new QVBoxLayout(loginErrorContainer_);
     errorContainerLayout->setContentsMargins(0, 12, 0, 0);
@@ -167,7 +165,6 @@ AuthPage::AuthPage(QWidget *parent): QWidget(parent) {
     errorRow->addLayout(errorTexts, 1);
     errorContainerLayout->addWidget(errorCard);
 
-    // Scoped style: the warning box won't change other screens.
     errorCard->setStyleSheet(R"(
         QFrame#loginErrorCard {
             background-color: #F9EAE6;
@@ -230,7 +227,7 @@ AuthPage::AuthPage(QWidget *parent): QWidget(parent) {
         goRegisterButton_->show();
         loginName_->setFocus();
     });
-    // Automatically remove the previous error as soon as the user edits a field.
+    
     auto clearLoginAlert = [this]() {
         loginErrorContainer_->hide();
         switchAccountButton_->hide();
@@ -239,7 +236,7 @@ AuthPage::AuthPage(QWidget *parent): QWidget(parent) {
     connect(loginName_, &QLineEdit::textChanged, this, clearLoginAlert);
     connect(loginPassword_, &QLineEdit::textChanged, this, clearLoginAlert);
 
-    // Sign-up: Figma default and validation states.
+    // Đăng ký: trạng thái mặc định và trạng thái validation
     auto *registerContent = new QWidget;
     auto *r = new QVBoxLayout(registerContent);
     r->setContentsMargins(24, 12, 24, 24);
@@ -259,7 +256,7 @@ AuthPage::AuthPage(QWidget *parent): QWidget(parent) {
     regPassword_ = field("At least 8 characters", true);
     regConfirm_ = field("Confirm password", true);
 
-    // Each message is placed immediately below the corresponding input.
+    // Mỗi thông báo lỗi nằm ngay dưới ô input tương ứng.
     auto addValidatedField = [r](const QString &caption, QLineEdit *edit,
                                  QLabel *&errorLabel) {
         addField(r, caption, edit);
@@ -310,7 +307,7 @@ AuthPage::AuthPage(QWidget *parent): QWidget(parent) {
     r->addStretch();
     pages_->addWidget(scrollPage(registerContent)); // index 1
 
-    // Successful signup uses its own Figma-like screen rather than a QMessageBox.
+    // Đăng ký thành công chuyển sang màn hình khác
     auto *successContent = new QWidget;
     auto *success = new QVBoxLayout(successContent);
     success->setContentsMargins(24, 90, 24, 24);
@@ -345,7 +342,7 @@ AuthPage::AuthPage(QWidget *parent): QWidget(parent) {
         regConfirm_->setEchoMode(mode);
     });
 
-    // Hide outdated validation messages as soon as the user changes the input.
+   // Ẩn thông báo lỗi validation cũ ngay khi người dùng sửa nội dung ô nhập.
     auto clearError = [this](QLineEdit *edit, QLabel *message) {
         connect(edit, &QLineEdit::textChanged, this, [this, message]() {
             message->hide();
@@ -379,8 +376,8 @@ void AuthPage::doLogin() {
     QString error;
     const Session session = AuthService::login(loginName_->text(), loginPassword_->text(), &error);
     if (!session.valid()) {
-        // AuthService currently returns this exact error when a valid-password
-        // login is attempted for an account with Status != ACTIVE.
+        // AuthService hiện trả về đúng lỗi này khi đăng nhập đúng mật khẩu
+        // nhưng tài khoản này bị khóa
         const bool locked = (error == QStringLiteral("Tai khoan da bi khoa. Lien he quan tri vien."));
         loginErrorIcon_->setText(locked ? QStringLiteral("🔒") : QStringLiteral("ⓘ"));
         loginErrorTitle_->setText(locked ? QStringLiteral("Account locked") : QString());
@@ -401,7 +398,6 @@ void AuthPage::doLogin() {
     emit authenticated(session);
 }
 void AuthPage::doRegister() {
-    // Front-end checks match the Figma Sign up validation screen.
     for (QLabel *message : {regNameError_, regEmailError_, regPasswordError_,
                             regConfirmError_, regServerError_}) {
         message->hide();
@@ -441,7 +437,6 @@ void AuthPage::doRegister() {
 
     QString error;
     if (!AuthService::registerUser(name, email, password, &error)) {
-        // Keep internal database errors out of the UI.
         showError(regServerError_,
             "Unable to create an account. The username or email may already be in use. "
             "Please check your details and try again.");
