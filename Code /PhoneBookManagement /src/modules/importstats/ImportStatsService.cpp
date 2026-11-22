@@ -9,7 +9,7 @@
 #include <QVector>
 
 namespace {
-// Parser CSV co ho tro dau nhay kep va dau phay ben trong truong.
+
 bool parseCsv(const QString &text, QVector<QStringList> *rows, QString *error) {
     QString current;
     QStringList row;
