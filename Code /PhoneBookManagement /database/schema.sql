@@ -1,5 +1,4 @@
--- 5 bang theo Database Schema cua nhom.
--- Password trong so do duoc trien khai thanh PasswordHash + PasswordSalt.
+
 CREATE TABLE IF NOT EXISTS "USER" (
   UserID INTEGER PRIMARY KEY AUTOINCREMENT,
   UserName TEXT NOT NULL UNIQUE COLLATE NOCASE,
