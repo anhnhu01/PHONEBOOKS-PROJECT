@@ -24,7 +24,36 @@ Contact fromQuery(const QSqlQuery &q) {
 }
 const QString cols = "ContactID, UserID, FullName, PersonalPhone, WorkPhone, "
     "PersonalEmail, WorkEmail, Address, Gender, DateOfBirth, Company, Occupation, Notes";
-bool validate(const Contact &c, QString *error) {
+void bindContact(QSqlQuery &q, const Contact &c) {
+    q.addBindValue(c.fullName.trimmed());
+    q.addBindValue(c.personalPhone.trimmed());
+    q.addBindValue(c.workPhone.trimmed());
+    q.addBindValue(c.personalEmail.trimmed());
+    q.addBindValue(c.workEmail.trimmed());
+    q.addBindValue(c.address.trimmed());
+    q.addBindValue(c.gender.trimmed());
+    q.addBindValue(c.dateOfBirth.trimmed());
+    q.addBindValue(c.company.trimmed());
+    q.addBindValue(c.occupation.trimmed());
+    q.addBindValue(c.notes.trimmed());
+}
+// Non-empty text match, ignoring case and outer spaces.
+bool sameText(const QString &a, const QString &b) {
+    return !a.trimmed().isEmpty() && a.trimmed().compare(b.trimmed(), Qt::CaseInsensitive) == 0;
+}
+// True if the two contacts share any phone number or any email.
+bool sharesPhoneOrEmail(const Contact &a, const Contact &b) {
+    for (const QString &x : {a.personalPhone, a.workPhone})
+        for (const QString &y : {b.personalPhone, b.workPhone})
+            if (sameText(x, y)) return true;
+    for (const QString &x : {a.personalEmail, a.workEmail})
+        for (const QString &y : {b.personalEmail, b.workEmail})
+            if (sameText(x, y)) return true;
+    return false;
+}
+}
+
+bool ContactService::validate(const Contact &c, QString *error) {
     if (c.userId <= 0 || c.fullName.trimmed().isEmpty() || c.fullName.size() > 200) {
         if (error) *error = "Can co UserID hop le va FullName (toi da 200 ky tu).";
         return false;
@@ -32,6 +61,11 @@ bool validate(const Contact &c, QString *error) {
     if (c.personalPhone.size() > 20 || c.workPhone.size() > 20 ||
         c.personalEmail.size() > 100 || c.workEmail.size() > 100) {
         if (error) *error = "So dien thoai hoac email qua dai so voi Database Schema.";
+        return false;
+    }
+    if (c.personalPhone.trimmed().isEmpty() && c.workPhone.trimmed().isEmpty() &&
+        c.personalEmail.trimmed().isEmpty() && c.workEmail.trimmed().isEmpty()) {
+        if (error) *error = "Enter at least one phone number or email.";
         return false;
     }
     static const QRegularExpression emailRx(R"(^[^\s@]+@[^\s@]+\.[^\s@]+$)");
@@ -46,20 +80,6 @@ bool validate(const Contact &c, QString *error) {
         return false;
     }
     return true;
-}
-void bindContact(QSqlQuery &q, const Contact &c) {
-    q.addBindValue(c.fullName.trimmed());
-    q.addBindValue(c.personalPhone.trimmed());
-    q.addBindValue(c.workPhone.trimmed());
-    q.addBindValue(c.personalEmail.trimmed());
-    q.addBindValue(c.workEmail.trimmed());
-    q.addBindValue(c.address.trimmed());
-    q.addBindValue(c.gender.trimmed());
-    q.addBindValue(c.dateOfBirth.trimmed());
-    q.addBindValue(c.company.trimmed());
-    q.addBindValue(c.occupation.trimmed());
-    q.addBindValue(c.notes.trimmed());
-}
 }
 
 QVector<Contact> ContactService::list(int userId, const QString &search) {
@@ -98,8 +118,22 @@ bool ContactService::ownedBy(int userId, int contactId) {
     return q.exec() && q.next();
 }
 
+ContactService::Duplicate ContactService::checkDuplicate(const Contact &c) {
+    Duplicate result = Duplicate::None;
+    for (const Contact &other : list(c.userId)) {
+        if (other.id == c.id || !sharesPhoneOrEmail(c, other)) continue;
+        if (sameText(c.fullName, other.fullName)) return Duplicate::SameContact;
+        result = Duplicate::SharedInfo;
+    }
+    return result;
+}
+
 bool ContactService::add(Contact c, QString *error) {
     if (!validate(c, error)) return false;
+    if (checkDuplicate(c) == Duplicate::SameContact) {
+        if (error) *error = "This contact may already exist.";
+        return false;
+    }
     QSqlQuery q;
     q.prepare(R"(INSERT INTO CONTACT(UserID,FullName,PersonalPhone,WorkPhone,
         PersonalEmail,WorkEmail,Address,Gender,DateOfBirth,Company,Occupation,Notes)
