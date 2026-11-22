@@ -33,7 +33,6 @@ bool AdminService::setAccountLocked(int adminId, int targetId, bool locked, QStr
         return false;
     }
     QSqlQuery q;
-    // Khong khoa Admin khac trong demo.
     q.prepare(R"(UPDATE "USER" SET Status=? WHERE UserID=? AND Role='USER')");
     q.addBindValue(locked ? "LOCKED" : "ACTIVE");
     q.addBindValue(targetId);
