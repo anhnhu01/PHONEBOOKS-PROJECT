@@ -33,7 +33,6 @@ AdminPage::AdminPage(QWidget *parent) : QWidget(parent) {
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);
     table_->setSelectionMode(QAbstractItemView::SingleSelection);
     table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    // Preserve all five data fields, but hide ID/email in the narrow preview.
     table_->setColumnHidden(0,true);
     table_->setColumnHidden(2,true);
     table_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
