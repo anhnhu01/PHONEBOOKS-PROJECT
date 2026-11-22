@@ -20,14 +20,14 @@ private:
     QLineEdit *loginName_, *loginPassword_;
     QAction *loginPasswordToggle_ = nullptr;
     QLineEdit *regName_, *regEmail_, *regPassword_, *regConfirm_;
-    // Login validation alerts shown in the form (not QMessageBox).
+    // Cảnh báo kiểm tra hợp lệ khi đăng nhập hiển thị ngay trên form 
     QWidget *loginErrorContainer_ = nullptr;
     QLabel *loginErrorIcon_ = nullptr;
     QLabel *loginErrorTitle_ = nullptr;
     QLabel *loginErrorDetail_ = nullptr;
     QPushButton *switchAccountButton_ = nullptr;
     QPushButton *goRegisterButton_ = nullptr;
-    // Sign-up inline feedback and success screen.
+   // Phản hồi trực tiếp trên form và màn hình đăng ký thành công.
     QLabel *regNameError_ = nullptr;
     QLabel *regEmailError_ = nullptr;
     QLabel *regPasswordError_ = nullptr;
