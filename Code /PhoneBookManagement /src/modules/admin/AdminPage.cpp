@@ -77,7 +77,7 @@ void AdminPage::changeStatus(bool locked) {
 void AdminPage::deleteAccount() {
     const int id = selectedId();
     if (!id) return;
-    if (QMessageBox::question(this, "Delete user", "Xoa tai khoan va TOAN BO lien he cua ho?") != QMessageBox::Yes)
+    if (QMessageBox::question(this, "Delete user", "Delete their account and ALL of their contacts?") != QMessageBox::Yes)
         return;
     QString error;
     if (!AdminService::deleteAccount(adminId_, id, &error)) {
